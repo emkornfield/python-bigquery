@@ -1535,7 +1535,8 @@ class RowIterator(HTTPIterator):
         owns_bqstorage_client = False
         if not bqstorage_client and create_bqstorage_client:
             owns_bqstorage_client = True
-            bqstorage_client = self.client._create_bqstorage_client()
+            def new_client(**kwargs): return self.client._create_bqstorage_client(**kwargs)
+            bqstorage_client = new_client 
 
         try:
             progress_bar = self._get_progress_bar(progress_bar_type)
@@ -1558,7 +1559,8 @@ class RowIterator(HTTPIterator):
                 progress_bar.close()
         finally:
             if owns_bqstorage_client:
-                bqstorage_client.transport.channel.close()
+                pass
+                # bqstorage_client.transport.channel.close()
 
         if record_batches:
             return pyarrow.Table.from_batches(record_batches)

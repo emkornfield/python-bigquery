@@ -588,7 +588,8 @@ def _download_table_bqstorage_stream(
         position = bigquery_storage_v1beta1.types.StreamPosition(stream=stream)
         rowstream = bqstorage_client.read_rows(position).rows(session)
     else:
-        rowstream = bqstorage_client.read_rows(stream.name).rows(session)
+        bqs_client = bqstorage_client(stream=stream.name)
+        rowstream = bqs_client.read_rows(stream.name).rows(session)
 
     for page in rowstream.pages:
         if download_state.done:
@@ -665,7 +666,7 @@ def _download_table_bqstorage(
             for field in selected_fields:
                 requested_session.read_options.selected_fields.append(field.name)
 
-        session = bqstorage_client.create_read_session(
+        session = bqstorage_client().create_read_session(
             parent="projects/{}".format(project_id),
             read_session=requested_session,
             max_stream_count=requested_streams,

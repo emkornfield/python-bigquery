@@ -50,6 +50,7 @@ from google.api_core import page_iterator
 import google.cloud._helpers
 from google.cloud import exceptions
 from google.cloud.client import ClientWithProject
+from google.cloud.bigquery_storage_v1.gapic.transports.big_query_read_grpc_transport import BigQueryReadGrpcTransport 
 
 from google.cloud.bigquery._helpers import _get_sub_prop
 from google.cloud.bigquery._helpers import _record_field_to_json
@@ -390,7 +391,7 @@ class Client(ClientWithProject):
         )
         return DatasetReference(project, dataset_id)
 
-    def _create_bqstorage_client(self):
+    def _create_bqstorage_client(self, **kwargs):
         """Create a BigQuery Storage API client using this client's credentials.
 
         If a client cannot be created due to missing dependencies, raise a
@@ -408,8 +409,11 @@ class Client(ClientWithProject):
                 "google-cloud-bigquery-storage is not installed."
             )
             return None
-
-        return bigquery_storage_v1.BigQueryReadClient(credentials=self._credentials)
+        def new_transport(**ekwargs): 
+            del ekwargs['default_class']
+            return BigQueryReadGrpcTransport(options=kwargs, **ekwargs)
+        return bigquery_storage_v1.BigQueryReadClient(credentials=self._credentials,
+                       transport=new_transport)
 
     def create_dataset(
         self, dataset, exists_ok=False, retry=DEFAULT_RETRY, timeout=None
